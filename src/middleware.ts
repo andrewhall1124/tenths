@@ -6,6 +6,7 @@ const isPublicRoute = createRouteMatcher([
   "/",
   "/sign-in(.*)",
   "/sign-up(.*)",
+  "/explore(.*)", // public discovery + leaderboards
   "/u/(.*)", // public profiles
   "/place/(.*)", // public place pages
   "/manifest.webmanifest",
