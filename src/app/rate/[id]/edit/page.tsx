@@ -40,6 +40,7 @@ export default async function EditRatingPage({
           categoryId: rating.categoryId,
           score: rating.score,
           note: rating.note,
+          photoUrl: rating.photoUrl,
           date: rating.createdAt.toISOString(),
           place: { placeId: rating.placeId, name: rating.placeName },
         }}

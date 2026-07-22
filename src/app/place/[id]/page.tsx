@@ -122,6 +122,14 @@ export default async function PlacePage({
                       “{r.note}”
                     </p>
                   )}
+                  {r.photoUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={r.photoUrl}
+                      alt=""
+                      className="mt-2 max-h-64 w-full rounded-xl border border-border object-cover"
+                    />
+                  )}
                 </div>
               </li>
             ))}

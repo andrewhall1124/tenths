@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { deleteRating, saveRating, updateRating } from "@/app/actions";
 import { formatScore, scoreColor } from "@/lib/score";
 import { toDateInputValue } from "@/lib/time";
-import { TrashIcon } from "@/components/icons";
+import { fileToPhotoDataUrl } from "@/lib/image";
+import { CameraIcon, TrashIcon } from "@/components/icons";
 
 type Category = { id: number; slug: string; name: string; emoji: string };
 
@@ -34,6 +35,7 @@ type EditState = {
   categoryId: number;
   score: number;
   note: string | null;
+  photoUrl: string | null;
   date: string;
   place: { placeId: number; name: string };
 };
@@ -73,10 +75,23 @@ export function RateForm({
 
   const [score, setScore] = useState(edit?.score ?? 7.5);
   const [note, setNote] = useState(edit?.note ?? "");
+  const [photo, setPhoto] = useState<string | null>(edit?.photoUrl ?? null);
   const [date, setDate] = useState(() =>
     toDateInputValue(edit?.date ?? new Date()),
   );
+  const photoRef = useRef<HTMLInputElement>(null);
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  async function onPickPhoto(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError(null);
+    try {
+      setPhoto(await fileToPhotoDataUrl(file));
+    } catch {
+      setError("Couldn’t read that image.");
+    }
+  }
 
   // Lock the place only when creating a rating for a specific place (from the
   // place page). When editing, the location is always changeable.
@@ -116,6 +131,10 @@ export function RateForm({
     fd.set("score", String(score));
     if (date) fd.set("date", date);
     if (note.trim()) fd.set("note", note.trim());
+    // When editing, always send the field (empty clears an existing photo);
+    // when creating, only send it if one was picked.
+    if (isEdit) fd.set("photoUrl", photo ?? "");
+    else if (photo) fd.set("photoUrl", photo);
 
     // An existing place is tied to its original category, so if the category
     // changed we must re-resolve it by name under the new category instead.
@@ -307,6 +326,41 @@ export function RateForm({
           placeholder={`What made it a ${formatScore(score)}?`}
           className="w-full resize-none rounded-xl border border-border bg-surface px-3 py-2.5 outline-none focus:border-accent"
         />
+      </section>
+
+      {/* Photo */}
+      <section className="space-y-2">
+        <label className="text-sm font-medium text-muted">Photo (optional)</label>
+        <input
+          ref={photoRef}
+          type="file"
+          accept="image/*"
+          onChange={onPickPhoto}
+          className="hidden"
+        />
+        {photo ? (
+          <div className="relative overflow-hidden rounded-2xl border border-border">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={photo} alt="" className="w-full object-cover" />
+            <button
+              type="button"
+              onClick={() => setPhoto(null)}
+              aria-label="Remove photo"
+              className="absolute right-2 top-2 rounded-full bg-background/80 p-1.5 text-foreground backdrop-blur"
+            >
+              <TrashIcon className="h-4 w-4" />
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => photoRef.current?.click()}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-border bg-surface px-4 py-6 text-sm text-muted"
+          >
+            <CameraIcon className="h-5 w-5" />
+            Add a photo
+          </button>
+        )}
       </section>
 
       {error && <p className="text-sm text-red-500">{error}</p>}

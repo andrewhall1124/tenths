@@ -13,6 +13,7 @@ export type FeedItem = {
   ratingId: number;
   score: number;
   note: string | null;
+  photoUrl: string | null;
   createdAt: Date;
   updatedAt: Date;
   placeId: number;
@@ -31,6 +32,7 @@ const feedColumns = {
   ratingId: ratings.id,
   score: ratings.score,
   note: ratings.note,
+  photoUrl: ratings.photoUrl,
   createdAt: ratings.createdAt,
   updatedAt: ratings.updatedAt,
   placeId: places.id,
@@ -123,6 +125,7 @@ export type PlaceRating = {
   ratingId: number;
   score: number;
   note: string | null;
+  photoUrl: string | null;
   createdAt: Date;
   updatedAt: Date;
   userId: string;
@@ -139,6 +142,7 @@ export async function getPlaceRatings(
       ratingId: ratings.id,
       score: ratings.score,
       note: ratings.note,
+      photoUrl: ratings.photoUrl,
       createdAt: ratings.createdAt,
       updatedAt: ratings.updatedAt,
       userId: users.id,
@@ -156,6 +160,7 @@ export type EditableRating = {
   ratingId: number;
   score: number;
   note: string | null;
+  photoUrl: string | null;
   createdAt: Date;
   placeId: number;
   placeName: string;
@@ -175,6 +180,7 @@ export async function getRatingForEdit(
       ratingId: ratings.id,
       score: ratings.score,
       note: ratings.note,
+      photoUrl: ratings.photoUrl,
       createdAt: ratings.createdAt,
       placeId: places.id,
       placeName: places.name,

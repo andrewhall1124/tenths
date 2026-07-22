@@ -36,7 +36,7 @@ export function BottomNav() {
     p === "/" ? pathname === "/" : pathname.startsWith(p);
 
   return (
-    <nav className="shrink-0 border-t border-border bg-surface safe-bottom">
+    <nav className="shrink-0 border-t border-border bg-background safe-bottom">
       <div className="mx-auto flex max-w-lg items-stretch px-2">
         <Item href="/" label="Feed" icon={HomeIcon} active={is("/")} />
         <Item

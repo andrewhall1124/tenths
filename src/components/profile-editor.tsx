@@ -3,24 +3,8 @@
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { updateProfile } from "@/app/actions";
+import { fileToSquareDataUrl } from "@/lib/image";
 import { CameraIcon } from "./icons";
-
-// Resize/crop any picked image to a small square JPEG data URL so it fits in
-// the users.image_url column without needing external blob storage.
-async function fileToAvatar(file: File): Promise<string> {
-  const bitmap = await createImageBitmap(file);
-  const size = 256;
-  const canvas = document.createElement("canvas");
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("Canvas unavailable");
-  const scale = Math.max(size / bitmap.width, size / bitmap.height);
-  const w = bitmap.width * scale;
-  const h = bitmap.height * scale;
-  ctx.drawImage(bitmap, (size - w) / 2, (size - h) / 2, w, h);
-  return canvas.toDataURL("image/jpeg", 0.85);
-}
 
 export function ProfileEditor({
   initial,
@@ -43,7 +27,7 @@ export function ProfileEditor({
     if (!file) return;
     setError(null);
     try {
-      setImageUrl(await fileToAvatar(file));
+      setImageUrl(await fileToSquareDataUrl(file));
       setSaved(false);
     } catch {
       setError("Couldn’t read that image.");

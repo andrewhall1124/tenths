@@ -26,7 +26,15 @@ const ratingSchema = z.object({
   score: z.coerce.number().min(0).max(10),
   note: z.string().max(500).optional(),
   date: z.coerce.date().optional(),
+  // A downscaled JPEG data URL (or empty string to clear). ~2MB ceiling.
+  photoUrl: z.string().max(2_000_000).optional(),
 });
+
+function cleanPhoto(value: string | undefined): string | null {
+  const v = value?.trim();
+  if (!v) return null;
+  return v.startsWith("data:image/") || v.startsWith("https://") ? v : null;
+}
 
 /** Resolve the target place, creating or deduping it as needed. */
 async function resolvePlace(
@@ -91,6 +99,7 @@ export async function saveRating(formData: FormData) {
   const placeId = await resolvePlace(input, user.id);
   const note = input.note?.trim() || null;
   const createdAt = input.date ?? new Date();
+  const photoUrl = cleanPhoto(input.photoUrl);
 
   await db
     .insert(ratings)
@@ -100,10 +109,17 @@ export async function saveRating(formData: FormData) {
       score,
       note,
       createdAt,
+      photoUrl,
     })
     .onConflictDoUpdate({
       target: [ratings.userId, ratings.placeId],
-      set: { score, note, createdAt, updatedAt: new Date() },
+      set: {
+        score,
+        note,
+        createdAt,
+        updatedAt: new Date(),
+        ...(input.photoUrl !== undefined ? { photoUrl } : {}),
+      },
     });
 
   revalidatePath("/");
@@ -200,6 +216,9 @@ export async function updateRating(formData: FormData) {
     score: normalizeScore(input.score),
     note: input.note?.trim() || null,
     ...(input.date ? { createdAt: input.date } : {}),
+    ...(input.photoUrl !== undefined
+      ? { photoUrl: cleanPhoto(input.photoUrl) }
+      : {}),
     updatedAt: new Date(),
   };
 

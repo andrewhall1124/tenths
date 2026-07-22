@@ -22,6 +22,7 @@ export function RatingCard({
             href={`/place/${item.placeId}`}
             className="block truncate font-semibold"
           >
+            <span className="mr-1">{item.categoryEmoji}</span>
             {item.placeName}
           </Link>
           {editable && (
@@ -41,6 +42,14 @@ export function RatingCard({
           <p className="mt-1 line-clamp-2 text-sm text-foreground/90">
             “{item.note}”
           </p>
+        )}
+        {item.photoUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={item.photoUrl}
+            alt=""
+            className="mt-2 max-h-64 w-full rounded-xl border border-border object-cover"
+          />
         )}
         <div className="mt-1.5 flex items-center gap-1.5 text-xs text-muted">
           <Link href={`/u/${item.handle}`}>@{item.handle}</Link>
