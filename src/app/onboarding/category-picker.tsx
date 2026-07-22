@@ -52,13 +52,12 @@ export function CategoryPicker({
             <button
               key={c.id}
               onClick={() => toggle(c.id)}
-              className={`flex aspect-square flex-col items-center justify-center gap-1 rounded-2xl border text-sm transition ${
+              className={`flex aspect-square flex-col items-center justify-center gap-1 rounded-2xl border p-2 text-center text-sm font-medium transition ${
                 on
-                  ? "border-accent bg-accent/10 text-foreground"
+                  ? "border-foreground bg-surface-2 text-foreground"
                   : "border-border bg-surface text-muted"
               }`}
             >
-              <span className="text-3xl">{c.emoji}</span>
               {c.name}
             </button>
           );

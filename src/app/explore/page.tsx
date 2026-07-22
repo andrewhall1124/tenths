@@ -15,15 +15,19 @@ export default async function ExplorePage() {
       <h1 className="text-2xl font-bold">Explore</h1>
 
       <section className="space-y-2">
-        <h2 className="text-sm font-medium text-muted">Categories</h2>
-        <div className="grid grid-cols-4 gap-2">
+        <div className="flex items-baseline justify-between">
+          <h2 className="text-sm font-medium text-muted">Categories</h2>
+          <Link href="/rate" className="text-sm font-medium text-accent">
+            + Rate
+          </Link>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
           {categories.map((c) => (
             <Link
               key={c.slug}
               href={`/explore/${c.slug}`}
-              className="flex aspect-square flex-col items-center justify-center gap-1 rounded-2xl border border-border bg-surface text-xs"
+              className="flex aspect-[3/2] items-center justify-center rounded-2xl border border-border bg-surface px-2 text-center text-sm font-medium"
             >
-              <span className="text-2xl">{c.emoji}</span>
               {c.name}
             </Link>
           ))}

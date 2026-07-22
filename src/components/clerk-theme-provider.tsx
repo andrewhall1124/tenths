@@ -1,7 +1,24 @@
 "use client";
 
 import { ClerkProvider } from "@clerk/nextjs";
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
+
+const QUERY = "(prefers-color-scheme: dark)";
+
+// Subscribe to the system color scheme the React-idiomatic way (no
+// setState-in-effect). Server snapshot is `false` (light) to keep hydration
+// stable; the client corrects immediately on mount.
+function useSystemDark(): boolean {
+  return useSyncExternalStore(
+    (onChange) => {
+      const mq = window.matchMedia(QUERY);
+      mq.addEventListener("change", onChange);
+      return () => mq.removeEventListener("change", onChange);
+    },
+    () => window.matchMedia(QUERY).matches,
+    () => false,
+  );
+}
 
 // Monochrome Clerk palettes that mirror our CSS themes. Clerk generates color
 // scales from these, so they must be concrete colors (not CSS vars) — hence we
@@ -37,15 +54,7 @@ export function ClerkThemeProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [isDark, setIsDark] = useState(true);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    setIsDark(mq.matches);
-    const onChange = (e: MediaQueryListEvent) => setIsDark(e.matches);
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
+  const isDark = useSystemDark();
 
   return (
     <ClerkProvider

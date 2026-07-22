@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { db } from "@/db";
@@ -25,6 +25,7 @@ const ratingSchema = z.object({
   lng: z.coerce.number().optional(),
   score: z.coerce.number().min(0).max(10),
   note: z.string().max(500).optional(),
+  date: z.coerce.date().optional(),
 });
 
 /** Resolve the target place, creating or deduping it as needed. */
@@ -88,6 +89,8 @@ export async function saveRating(formData: FormData) {
   const input = ratingSchema.parse(Object.fromEntries(formData.entries()));
   const score = normalizeScore(input.score);
   const placeId = await resolvePlace(input, user.id);
+  const note = input.note?.trim() || null;
+  const createdAt = input.date ?? new Date();
 
   await db
     .insert(ratings)
@@ -95,11 +98,12 @@ export async function saveRating(formData: FormData) {
       userId: user.id,
       placeId,
       score,
-      note: input.note?.trim() || null,
+      note,
+      createdAt,
     })
     .onConflictDoUpdate({
       target: [ratings.userId, ratings.placeId],
-      set: { score, note: input.note?.trim() || null, updatedAt: new Date() },
+      set: { score, note, createdAt, updatedAt: new Date() },
     });
 
   revalidatePath("/");
@@ -168,6 +172,119 @@ export async function toggleFollow(followeeId: string) {
     });
   }
   revalidatePath("/");
+}
+
+const updateRatingSchema = z.object({
+  ratingId: z.coerce.number().int().positive(),
+  score: z.coerce.number().min(0).max(10),
+  note: z.string().max(500).optional(),
+  date: z.coerce.date().optional(),
+});
+
+/** Edit an existing rating the caller owns: score, note, and date. */
+export async function updateRating(formData: FormData) {
+  const user = await requireUser();
+  const input = updateRatingSchema.parse(Object.fromEntries(formData.entries()));
+
+  const existing = await db
+    .select({ placeId: ratings.placeId, userId: ratings.userId })
+    .from(ratings)
+    .where(eq(ratings.id, input.ratingId))
+    .limit(1);
+  const row = existing[0];
+  if (!row || row.userId !== user.id) throw new Error("Rating not found");
+
+  await db
+    .update(ratings)
+    .set({
+      score: normalizeScore(input.score),
+      note: input.note?.trim() || null,
+      ...(input.date ? { createdAt: input.date } : {}),
+      updatedAt: new Date(),
+    })
+    .where(eq(ratings.id, input.ratingId));
+
+  revalidatePath("/");
+  revalidatePath(`/place/${row.placeId}`);
+  revalidatePath(`/u/${user.handle}`);
+  return { placeId: row.placeId };
+}
+
+/** Delete a rating the caller owns. */
+export async function deleteRating(ratingId: number) {
+  const user = await requireUser();
+  const existing = await db
+    .select({ placeId: ratings.placeId, userId: ratings.userId })
+    .from(ratings)
+    .where(eq(ratings.id, ratingId))
+    .limit(1);
+  const row = existing[0];
+  if (!row || row.userId !== user.id) throw new Error("Rating not found");
+
+  await db.delete(ratings).where(eq(ratings.id, ratingId));
+
+  revalidatePath("/");
+  revalidatePath(`/place/${row.placeId}`);
+  revalidatePath(`/u/${user.handle}`);
+  return { placeId: row.placeId };
+}
+
+const profileSchema = z.object({
+  handle: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .regex(
+      /^[a-z0-9_]{3,20}$/,
+      "Use 3–20 letters, numbers, or underscores",
+    ),
+  name: z.string().trim().max(60).nullish(),
+  // Either an https URL or a small inline data URL (client-resized avatar).
+  imageUrl: z.string().max(600_000).nullish(),
+});
+
+export type ProfileUpdate = z.input<typeof profileSchema>;
+
+/** Update the caller's username, display name, and avatar. */
+export async function updateProfile(
+  input: ProfileUpdate,
+): Promise<{ ok: true; handle: string } | { error: string }> {
+  const user = await requireUser();
+  const parsed = profileSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid profile" };
+  }
+  const { handle, name } = parsed.data;
+  const imageUrl = parsed.data.imageUrl;
+
+  if (
+    imageUrl &&
+    !imageUrl.startsWith("https://") &&
+    !imageUrl.startsWith("data:image/")
+  ) {
+    return { error: "Invalid image" };
+  }
+
+  const clash = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(and(eq(users.handle, handle), ne(users.id, user.id)))
+    .limit(1);
+  if (clash.length > 0) return { error: "That username is taken" };
+
+  await db
+    .update(users)
+    .set({
+      handle,
+      name: name || null,
+      ...(imageUrl !== undefined ? { imageUrl: imageUrl || null } : {}),
+    })
+    .where(eq(users.id, user.id));
+
+  revalidatePath("/");
+  revalidatePath(`/u/${handle}`);
+  if (handle !== user.handle) revalidatePath(`/u/${user.handle}`);
+  return { ok: true, handle };
 }
 
 // Category id lookup by slug, used by the rate flow.

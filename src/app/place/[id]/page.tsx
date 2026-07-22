@@ -3,8 +3,9 @@ import { notFound } from "next/navigation";
 import { getOrCreateUser } from "@/lib/auth";
 import { getPlace, getPlaceRatings } from "@/lib/queries";
 import { ScoreBadge } from "@/components/score-badge";
+import { PencilIcon } from "@/components/icons";
 import { formatScore } from "@/lib/score";
-import { timeAgo } from "@/lib/time";
+import { formatDate } from "@/lib/time";
 
 export const dynamic = "force-dynamic";
 
@@ -32,9 +33,7 @@ export default async function PlacePage({
   return (
     <div className="space-y-6 py-2">
       <div className="text-sm text-muted">
-        <Link href={`/explore/${place.categorySlug}`} className="hover:text-accent">
-          {place.categoryEmoji} {place.categoryName}
-        </Link>
+        <Link href={`/explore/${place.categorySlug}`}>{place.categoryName}</Link>
       </div>
 
       <header className="flex items-center gap-4">
@@ -61,12 +60,16 @@ export default async function PlacePage({
       </header>
 
       <Link
-        href={`/rate?place=${place.id}&category=${place.categorySlug}&name=${encodeURIComponent(
-          place.name,
-        )}`}
+        href={
+          myRating
+            ? `/rate/${myRating.ratingId}/edit`
+            : `/rate?place=${place.id}&category=${place.categorySlug}&name=${encodeURIComponent(
+                place.name,
+              )}`
+        }
         className="block w-full rounded-full bg-accent px-6 py-3 text-center font-semibold text-accent-ink"
       >
-        {myRating ? `Update your ${formatScore(myRating.score)}` : "Add your score"}
+        {myRating ? `Edit your ${formatScore(myRating.score)}` : "Add your score"}
       </Link>
 
       <section className="space-y-2">
@@ -92,18 +95,28 @@ export default async function PlacePage({
                   <ScoreBadge score={r.score} size="sm" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <Link
-                    href={`/u/${r.handle}`}
-                    className="font-medium hover:text-accent"
-                  >
-                    @{r.handle}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <Link href={`/u/${r.handle}`} className="font-medium">
+                        @{r.handle}
+                        {r.userId === user?.id && (
+                          <span className="ml-1 text-xs text-muted">(you)</span>
+                        )}
+                      </Link>
+                      <span className="ml-2 text-xs text-muted">
+                        {formatDate(r.createdAt)}
+                      </span>
+                    </div>
                     {r.userId === user?.id && (
-                      <span className="ml-1 text-xs text-accent">(you)</span>
+                      <Link
+                        href={`/rate/${r.ratingId}/edit`}
+                        aria-label="Edit rating"
+                        className="-mr-1 shrink-0 rounded-full p-1 text-muted hover:text-foreground"
+                      >
+                        <PencilIcon className="h-4 w-4" />
+                      </Link>
                     )}
-                  </Link>
-                  <span className="ml-2 text-xs text-muted">
-                    {timeAgo(r.updatedAt)}
-                  </span>
+                  </div>
                   {r.note && (
                     <p className="mt-0.5 text-sm text-foreground/90">
                       “{r.note}”

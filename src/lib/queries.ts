@@ -123,6 +123,7 @@ export type PlaceRating = {
   ratingId: number;
   score: number;
   note: string | null;
+  createdAt: Date;
   updatedAt: Date;
   userId: string;
   handle: string;
@@ -138,6 +139,7 @@ export async function getPlaceRatings(
       ratingId: ratings.id,
       score: ratings.score,
       note: ratings.note,
+      createdAt: ratings.createdAt,
       updatedAt: ratings.updatedAt,
       userId: users.id,
       handle: users.handle,
@@ -148,6 +150,41 @@ export async function getPlaceRatings(
     .innerJoin(users, eq(ratings.userId, users.id))
     .where(eq(ratings.placeId, placeId))
     .orderBy(desc(ratings.updatedAt));
+}
+
+export type EditableRating = {
+  ratingId: number;
+  score: number;
+  note: string | null;
+  createdAt: Date;
+  placeId: number;
+  placeName: string;
+  placeAddress: string | null;
+  categoryName: string;
+};
+
+/** Load a rating for editing, scoped to its owner. */
+export async function getRatingForEdit(
+  ratingId: number,
+  userId: string,
+): Promise<EditableRating | null> {
+  const rows = await db
+    .select({
+      ratingId: ratings.id,
+      score: ratings.score,
+      note: ratings.note,
+      createdAt: ratings.createdAt,
+      placeId: places.id,
+      placeName: places.name,
+      placeAddress: places.address,
+      categoryName: categories.name,
+    })
+    .from(ratings)
+    .innerJoin(places, eq(ratings.placeId, places.id))
+    .innerJoin(categories, eq(places.categoryId, categories.id))
+    .where(and(eq(ratings.id, ratingId), eq(ratings.userId, userId)))
+    .limit(1);
+  return rows[0] ?? null;
 }
 
 /** A single user's rating for a place, if any. */

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { saveRating } from "@/app/actions";
 import { formatScore, scoreColor } from "@/lib/score";
+import { toDateInputValue } from "@/lib/time";
 
 type Category = { id: number; slug: string; name: string; emoji: string };
 
@@ -55,6 +56,7 @@ export function RateForm({
 
   const [score, setScore] = useState(7.5);
   const [note, setNote] = useState("");
+  const [date, setDate] = useState(() => toDateInputValue(new Date()));
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Debounced Google Places search.
@@ -89,6 +91,7 @@ export function RateForm({
     const fd = new FormData();
     fd.set("categoryId", String(categoryId));
     fd.set("score", String(score));
+    if (date) fd.set("date", date);
     if (note.trim()) fd.set("note", note.trim());
     if (place.kind === "existing") fd.set("existingPlaceId", String(place.placeId));
     else if (place.kind === "google") {
@@ -123,11 +126,11 @@ export function RateForm({
               onClick={() => setCategoryId(c.id)}
               className={`rounded-full border px-3 py-1.5 text-sm ${
                 categoryId === c.id
-                  ? "border-accent bg-accent/10"
+                  ? "border-foreground bg-surface-2 text-foreground"
                   : "border-border bg-surface text-muted"
               }`}
             >
-              {c.emoji} {c.name}
+              {c.name}
             </button>
           ))}
         </div>
@@ -229,6 +232,18 @@ export function RateForm({
             <span>10.0</span>
           </div>
         </div>
+      </section>
+
+      {/* Date */}
+      <section className="space-y-2">
+        <label className="text-sm font-medium text-muted">Date</label>
+        <input
+          type="date"
+          value={date}
+          max={toDateInputValue(new Date())}
+          onChange={(e) => setDate(e.target.value)}
+          className="w-full rounded-xl border border-border bg-surface px-3 py-2.5 outline-none focus:border-accent"
+        />
       </section>
 
       {/* Note */}

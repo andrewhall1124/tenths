@@ -59,7 +59,7 @@ export default async function HomePage() {
 function EmptyFeed() {
   return (
     <div className="rounded-2xl border border-border bg-surface p-6 text-center">
-      <p className="text-4xl">🍕🥯🍵</p>
+      <div className="tnum text-4xl font-black tracking-tight">0.0</div>
       <h2 className="mt-3 font-semibold">No scores yet</h2>
       <p className="mt-1 text-sm text-muted">
         Be the first — rate something you love out of ten.

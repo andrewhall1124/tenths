@@ -91,10 +91,16 @@ export default async function ProfilePage({
       {isSelf && (
         <div className="flex gap-2">
           <Link
+            href="/settings"
+            className="flex-1 rounded-full border border-border bg-surface px-4 py-2 text-center text-sm font-medium"
+          >
+            Settings
+          </Link>
+          <Link
             href="/onboarding"
             className="flex-1 rounded-full border border-border bg-surface px-4 py-2 text-center text-sm font-medium"
           >
-            Edit categories
+            Categories
           </Link>
           <SignOutButton>
             <button className="flex-1 rounded-full border border-border bg-surface px-4 py-2 text-center text-sm font-medium text-muted">
@@ -114,8 +120,7 @@ export default async function ProfilePage({
                 href={`/explore/${c.slug}`}
                 className="rounded-full border border-border bg-surface px-3 py-1.5 text-sm"
               >
-                {c.emoji} {c.name}{" "}
-                <span className="text-muted">{c.count}</span>
+                {c.name} <span className="text-muted">{c.count}</span>
               </Link>
             ))}
           </div>
@@ -129,7 +134,7 @@ export default async function ProfilePage({
         ) : (
           <div className="space-y-2.5">
             {profile.ratings.map((item) => (
-              <RatingCard key={item.ratingId} item={item} />
+              <RatingCard key={item.ratingId} item={item} editable={isSelf} />
             ))}
           </div>
         )}

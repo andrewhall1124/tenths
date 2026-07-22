@@ -17,9 +17,7 @@ export default async function LeaderboardPage({
   return (
     <div className="space-y-5 py-2">
       <header className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">
-          {category.emoji} {category.name}
-        </h1>
+        <h1 className="text-2xl font-bold">{category.name}</h1>
         <Link
           href={`/rate?category=${category.slug}`}
           className="text-sm font-medium text-accent"

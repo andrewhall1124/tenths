@@ -1,3 +1,21 @@
+/** A calendar date like "Jul 22, 2026" (drops the year when it's the current one). */
+export function formatDate(date: Date | string): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  const now = new Date();
+  return d.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: d.getFullYear() === now.getFullYear() ? undefined : "numeric",
+  });
+}
+
+/** Value for an <input type="date">: local YYYY-MM-DD. */
+export function toDateInputValue(date: Date | string): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  const off = d.getTimezoneOffset();
+  return new Date(d.getTime() - off * 60000).toISOString().slice(0, 10);
+}
+
 /** Compact relative time: "3m", "5h", "2d", or a date for older items. */
 export function timeAgo(date: Date | string): string {
   const d = typeof date === "string" ? new Date(date) : date;
