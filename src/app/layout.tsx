@@ -52,11 +52,15 @@ export default function RootLayout({
         lang="en"
         className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       >
-        <body className="min-h-full flex flex-col bg-background text-foreground">
-          <main className="safe-top flex-1 w-full max-w-lg mx-auto px-4 pb-8">
-            {children}
-          </main>
-          <BottomNav />
+        <body className="bg-background text-foreground">
+          <div className="app-shell">
+            <main className="app-scroll safe-top">
+              <div className="mx-auto w-full max-w-lg px-4 pb-8">
+                {children}
+              </div>
+            </main>
+            <BottomNav />
+          </div>
         </body>
       </html>
     </ClerkThemeProvider>

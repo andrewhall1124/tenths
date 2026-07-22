@@ -41,6 +41,11 @@
   --font-mono: var(--font-geist-mono);
 }
 
+html,
+body {
+  height: 100%;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -49,6 +54,27 @@ body {
     system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /* The fixed .app-shell owns scrolling; the document itself never scrolls, so
+     iOS has nothing to rubber-band and the footer stays flush to the screen. */
+  overflow: hidden;
+}
+
+/* Full-screen app shell (mirrors the Bridge web pattern): pinned to the real
+   screen edges so the footer sits flush above the home indicator. */
+.app-shell {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--background);
+}
+
+/* The single scroll region between the (per-page) header and the footer. */
+.app-scroll {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
 }
 
 /* Tabular numerals so decimals always line up — core to the brand. */

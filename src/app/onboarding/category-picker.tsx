@@ -64,7 +64,7 @@ export function CategoryPicker({
         })}
       </div>
 
-      <div className="sticky bottom-24 flex justify-center">
+      <div className="sticky bottom-4 flex justify-center">
         <button
           onClick={finish}
           disabled={saving || selected.size === 0}
