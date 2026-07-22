@@ -18,11 +18,11 @@ function Item({
   return (
     <Link
       href={href}
-      className={`flex flex-1 flex-col items-center justify-center gap-1 text-[11px] ${
+      className={`flex flex-1 flex-col items-center justify-center gap-0.5 text-[11px] ${
         active ? "text-foreground" : "text-muted"
       }`}
     >
-      <Icon className="h-6 w-6" />
+      <Icon className="h-5 w-5" />
       {label}
     </Link>
   );
@@ -37,7 +37,7 @@ export function BottomNav({ meHandle }: { meHandle: string | null }) {
 
   return (
     <nav className="shrink-0 border-t border-border bg-background safe-bottom">
-      <div className="mx-auto flex h-12 max-w-lg items-stretch px-2">
+      <div className="mx-auto flex h-11 max-w-lg items-stretch px-2">
         <Item href="/" label="Feed" icon={HomeIcon} active={pathname === "/"} />
         <Item
           href="/explore"
