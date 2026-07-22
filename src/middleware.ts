@@ -15,7 +15,10 @@ const isPublicRoute = createRouteMatcher([
 
 export default clerkMiddleware(async (auth, req) => {
   if (!isPublicRoute(req)) {
-    await auth.protect();
+    // Send signed-out visitors to our sign-in page rather than a bare 404.
+    await auth.protect({
+      unauthenticatedUrl: new URL("/sign-in", req.url).toString(),
+    });
   }
   return NextResponse.next();
 });
