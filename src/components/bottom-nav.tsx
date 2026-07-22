@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useAuth } from "@clerk/nextjs";
 import { CompassIcon, HomeIcon, KeyIcon, UserIcon } from "./icons";
 
 function Item({
@@ -19,7 +18,7 @@ function Item({
   return (
     <Link
       href={href}
-      className={`flex flex-1 flex-col items-center gap-1 py-2 text-[11px] ${
+      className={`flex flex-1 flex-col items-center justify-center gap-1 text-[11px] ${
         active ? "text-foreground" : "text-muted"
       }`}
     >
@@ -29,30 +28,31 @@ function Item({
   );
 }
 
-export function BottomNav() {
+export function BottomNav({ meHandle }: { meHandle: string | null }) {
   const pathname = usePathname();
-  const { isSignedIn } = useAuth();
-  const is = (p: string) =>
-    p === "/" ? pathname === "/" : pathname.startsWith(p);
+  const signedIn = meHandle != null;
+  const youHref = meHandle ? `/u/${meHandle}` : "/me";
+  const youActive =
+    pathname === "/me" || (meHandle ? pathname === `/u/${meHandle}` : false);
 
   return (
     <nav className="shrink-0 border-t border-border bg-background safe-bottom">
-      <div className="mx-auto flex max-w-lg items-stretch px-2">
-        <Item href="/" label="Feed" icon={HomeIcon} active={is("/")} />
+      <div className="mx-auto flex h-12 max-w-lg items-stretch px-2">
+        <Item href="/" label="Feed" icon={HomeIcon} active={pathname === "/"} />
         <Item
           href="/explore"
           label="Explore"
           icon={CompassIcon}
-          active={is("/explore")}
+          active={pathname.startsWith("/explore")}
         />
-        {isSignedIn ? (
-          <Item href="/me" label="You" icon={UserIcon} active={is("/me")} />
+        {signedIn ? (
+          <Item href={youHref} label="You" icon={UserIcon} active={youActive} />
         ) : (
           <Item
             href="/sign-in"
             label="Sign in"
             icon={KeyIcon}
-            active={is("/sign-in")}
+            active={pathname.startsWith("/sign-in")}
           />
         )}
       </div>

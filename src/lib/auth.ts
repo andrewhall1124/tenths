@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
@@ -30,9 +31,10 @@ async function uniqueHandle(base: string): Promise<string> {
 
 /**
  * Ensure the signed-in Clerk user has a row in our users table.
- * Returns null when there is no authenticated user.
+ * Returns null when there is no authenticated user. Deduped per request via
+ * React cache() so the layout and page share a single lookup.
  */
-export async function getOrCreateUser(): Promise<User | null> {
+export const getOrCreateUser = cache(async (): Promise<User | null> => {
   const { userId } = await auth();
   if (!userId) return null;
 
@@ -75,7 +77,7 @@ export async function getOrCreateUser(): Promise<User | null> {
     .where(eq(users.id, userId))
     .limit(1);
   return row[0] ?? null;
-}
+});
 
 /** Like getOrCreateUser but throws when unauthenticated. */
 export async function requireUser(): Promise<User> {

@@ -4,6 +4,7 @@ import "./globals.css";
 import { BottomNav } from "@/components/bottom-nav";
 import { ClerkThemeProvider } from "@/components/clerk-theme-provider";
 import { SwUpdater } from "@/components/sw-updater";
+import { getOrCreateUser } from "@/lib/auth";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,11 +43,12 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const me = await getOrCreateUser();
   return (
     <ClerkThemeProvider>
       <html
@@ -61,7 +63,7 @@ export default function RootLayout({
                 {children}
               </div>
             </main>
-            <BottomNav />
+            <BottomNav meHandle={me?.handle ?? null} />
           </div>
         </body>
       </html>
