@@ -31,7 +31,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0b0b0d",
+  themeColor: "#000000",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -51,8 +51,15 @@ export default function RootLayout({
       signUpFallbackRedirectUrl="/"
       appearance={{
         variables: {
-          colorPrimary: "#ff9500",
-          colorBackground: "#17171b",
+          colorPrimary: "#ffffff",
+          colorPrimaryForeground: "#000000",
+          colorForeground: "#ffffff",
+          colorMutedForeground: "#8e8e93",
+          colorBackground: "#1c1c1e",
+          colorInput: "#2c2c2e",
+          colorInputForeground: "#ffffff",
+          colorBorder: "#38383a",
+          borderRadius: "0.75rem",
         },
       }}
     >
@@ -61,7 +68,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       >
         <body className="min-h-full flex flex-col bg-background text-foreground">
-          <main className="flex-1 w-full max-w-lg mx-auto px-4 pb-24 pt-4">
+          <main className="safe-top flex-1 w-full max-w-lg mx-auto px-4 pb-24">
             {children}
           </main>
           <BottomNav />

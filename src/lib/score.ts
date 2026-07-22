@@ -15,11 +15,10 @@ export function formatScore(n: number): string {
 }
 
 /**
- * HSL color on a red -> amber -> green ramp as the score climbs 0 -> 10.
+ * Monochrome brand: the numeral is always crisp white. Higher scores read
+ * as "brighter" only through the surrounding UI, never through hue.
  * Returns a CSS color string.
  */
-export function scoreColor(n: number): string {
-  const s = normalizeScore(n);
-  const hue = (s / MAX_SCORE) * 130; // 0 = red, 130 = green
-  return `hsl(${hue} 75% 45%)`;
+export function scoreColor(_n?: number): string {
+  return "#ffffff";
 }

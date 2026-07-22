@@ -8,8 +8,8 @@ export default function manifest(): MetadataRoute.Manifest {
       "Rate the things you love from 0.0 to 10.0. Build your palate, follow friends, find the best.",
     start_url: "/",
     display: "standalone",
-    background_color: "#0b0b0d",
-    theme_color: "#0b0b0d",
+    background_color: "#000000",
+    theme_color: "#000000",
     orientation: "portrait",
     icons: [
       { src: "/icon.svg", sizes: "any", type: "image/svg+xml" },
