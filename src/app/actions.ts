@@ -174,14 +174,15 @@ export async function toggleFollow(followeeId: string) {
   revalidatePath("/");
 }
 
-const updateRatingSchema = z.object({
+const updateRatingSchema = ratingSchema.extend({
   ratingId: z.coerce.number().int().positive(),
-  score: z.coerce.number().min(0).max(10),
-  note: z.string().max(500).optional(),
-  date: z.coerce.date().optional(),
 });
 
-/** Edit an existing rating the caller owns: score, note, and date. */
+/**
+ * Edit an existing rating the caller owns: score, note, date, and — by
+ * re-resolving the place — its category and location too. Moving a rating onto
+ * a place the user already rated merges into that rating (one per place).
+ */
 export async function updateRating(formData: FormData) {
   const user = await requireUser();
   const input = updateRatingSchema.parse(Object.fromEntries(formData.entries()));
@@ -194,20 +195,41 @@ export async function updateRating(formData: FormData) {
   const row = existing[0];
   if (!row || row.userId !== user.id) throw new Error("Rating not found");
 
-  await db
-    .update(ratings)
-    .set({
-      score: normalizeScore(input.score),
-      note: input.note?.trim() || null,
-      ...(input.date ? { createdAt: input.date } : {}),
-      updatedAt: new Date(),
-    })
-    .where(eq(ratings.id, input.ratingId));
+  const targetPlaceId = await resolvePlace(input, user.id);
+  const fields = {
+    score: normalizeScore(input.score),
+    note: input.note?.trim() || null,
+    ...(input.date ? { createdAt: input.date } : {}),
+    updatedAt: new Date(),
+  };
+
+  if (targetPlaceId === row.placeId) {
+    await db.update(ratings).set(fields).where(eq(ratings.id, input.ratingId));
+  } else {
+    // Repointing to a different place: if the user already rated it, fold this
+    // edit into that rating and drop the current one; otherwise just move it.
+    const dup = await db
+      .select({ id: ratings.id })
+      .from(ratings)
+      .where(and(eq(ratings.userId, user.id), eq(ratings.placeId, targetPlaceId)))
+      .limit(1);
+
+    if (dup[0] && dup[0].id !== input.ratingId) {
+      await db.update(ratings).set(fields).where(eq(ratings.id, dup[0].id));
+      await db.delete(ratings).where(eq(ratings.id, input.ratingId));
+    } else {
+      await db
+        .update(ratings)
+        .set({ placeId: targetPlaceId, ...fields })
+        .where(eq(ratings.id, input.ratingId));
+    }
+  }
 
   revalidatePath("/");
   revalidatePath(`/place/${row.placeId}`);
+  revalidatePath(`/place/${targetPlaceId}`);
   revalidatePath(`/u/${user.handle}`);
-  return { placeId: row.placeId };
+  return { placeId: targetPlaceId };
 }
 
 /** Delete a rating the caller owns. */

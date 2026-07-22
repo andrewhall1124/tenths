@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { saveRating } from "@/app/actions";
+import { deleteRating, saveRating, updateRating } from "@/app/actions";
 import { formatScore, scoreColor } from "@/lib/score";
 import { toDateInputValue } from "@/lib/time";
+import { TrashIcon } from "@/components/icons";
 
 type Category = { id: number; slug: string; name: string; emoji: string };
 
@@ -28,36 +29,58 @@ type Suggestion = {
   lng: number | null;
 };
 
+type EditState = {
+  ratingId: number;
+  categoryId: number;
+  score: number;
+  note: string | null;
+  date: string;
+  place: { placeId: number; name: string };
+};
+
 export function RateForm({
   categories,
   placesApiEnabled,
   preset,
+  edit,
 }: {
   categories: Category[];
   placesApiEnabled: boolean;
   preset: { categorySlug: string | null; placeId: number | null; name: string | null };
+  edit?: EditState;
 }) {
   const router = useRouter();
+  const isEdit = !!edit;
   const [pending, startTransition] = useTransition();
+  const [deleting, startDelete] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  const presetCat =
-    categories.find((c) => c.slug === preset.categorySlug) ?? categories[0];
-  const [categoryId, setCategoryId] = useState<number>(presetCat?.id ?? 0);
+  const initialCat = edit
+    ? categories.find((c) => c.id === edit.categoryId) ?? categories[0]
+    : categories.find((c) => c.slug === preset.categorySlug) ?? categories[0];
+  const [categoryId, setCategoryId] = useState<number>(initialCat?.id ?? 0);
 
   const [place, setPlace] = useState<ChosenPlace | null>(
-    preset.placeId && preset.name
-      ? { kind: "existing", placeId: preset.placeId, name: preset.name }
-      : null,
+    edit
+      ? { kind: "existing", placeId: edit.place.placeId, name: edit.place.name }
+      : preset.placeId && preset.name
+        ? { kind: "existing", placeId: preset.placeId, name: preset.name }
+        : null,
   );
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [searching, setSearching] = useState(false);
 
-  const [score, setScore] = useState(7.5);
-  const [note, setNote] = useState("");
-  const [date, setDate] = useState(() => toDateInputValue(new Date()));
+  const [score, setScore] = useState(edit?.score ?? 7.5);
+  const [note, setNote] = useState(edit?.note ?? "");
+  const [date, setDate] = useState(() =>
+    toDateInputValue(edit?.date ?? new Date()),
+  );
   const debounce = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Lock the place only when creating a rating for a specific place (from the
+  // place page). When editing, the location is always changeable.
+  const lockPlace = !isEdit && !!preset.placeId;
 
   // Debounced Google Places search.
   useEffect(() => {
@@ -93,8 +116,15 @@ export function RateForm({
     fd.set("score", String(score));
     if (date) fd.set("date", date);
     if (note.trim()) fd.set("note", note.trim());
-    if (place.kind === "existing") fd.set("existingPlaceId", String(place.placeId));
-    else if (place.kind === "google") {
+
+    // An existing place is tied to its original category, so if the category
+    // changed we must re-resolve it by name under the new category instead.
+    const movedCategory =
+      isEdit && place.kind === "existing" && categoryId !== edit!.categoryId;
+
+    if (place.kind === "existing" && !movedCategory) {
+      fd.set("existingPlaceId", String(place.placeId));
+    } else if (place.kind === "google") {
       fd.set("googlePlaceId", place.googlePlaceId);
       fd.set("name", place.name);
       if (place.address) fd.set("address", place.address);
@@ -106,10 +136,30 @@ export function RateForm({
 
     startTransition(async () => {
       try {
-        const { placeId } = await saveRating(fd);
-        router.push(`/place/${placeId}`);
+        if (isEdit) {
+          fd.set("ratingId", String(edit!.ratingId));
+          const { placeId } = await updateRating(fd);
+          router.push(`/place/${placeId}`);
+        } else {
+          const { placeId } = await saveRating(fd);
+          router.push(`/place/${placeId}`);
+        }
       } catch {
         setError("Something went wrong. Try again.");
+      }
+    });
+  }
+
+  function remove() {
+    if (!edit) return;
+    if (!confirm("Delete this rating? This can’t be undone.")) return;
+    setError(null);
+    startDelete(async () => {
+      try {
+        await deleteRating(edit.ratingId);
+        router.push("/");
+      } catch {
+        setError("Couldn’t delete. Try again.");
       }
     });
   }
@@ -147,13 +197,13 @@ export function RateForm({
                 <p className="truncate text-xs text-muted">{place.address}</p>
               )}
             </div>
-            {preset.placeId ? null : (
+            {lockPlace ? null : (
               <button
                 onClick={() => {
                   setPlace(null);
                   setQuery("");
                 }}
-                className="ml-3 shrink-0 text-sm text-muted hover:text-accent"
+                className="ml-3 shrink-0 text-sm text-muted hover:text-foreground"
               >
                 Change
               </button>
@@ -259,15 +309,26 @@ export function RateForm({
         />
       </section>
 
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="text-sm text-red-500">{error}</p>}
 
       <button
         onClick={submit}
-        disabled={pending || !place || !categoryId}
+        disabled={pending || deleting || !place || !categoryId}
         className="w-full rounded-full bg-accent px-6 py-3 font-semibold text-accent-ink disabled:opacity-40"
       >
-        {pending ? "Saving…" : "Save score"}
+        {pending ? "Saving…" : isEdit ? "Save changes" : "Save score"}
       </button>
+
+      {isEdit && (
+        <button
+          onClick={remove}
+          disabled={pending || deleting}
+          className="flex w-full items-center justify-center gap-2 rounded-full border border-border px-6 py-3 font-semibold text-red-500 disabled:opacity-40"
+        >
+          <TrashIcon className="h-4 w-4" />
+          {deleting ? "Deleting…" : "Delete rating"}
+        </button>
+      )}
     </div>
   );
 }

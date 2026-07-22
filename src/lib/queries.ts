@@ -160,6 +160,8 @@ export type EditableRating = {
   placeId: number;
   placeName: string;
   placeAddress: string | null;
+  categoryId: number;
+  categorySlug: string;
   categoryName: string;
 };
 
@@ -177,6 +179,8 @@ export async function getRatingForEdit(
       placeId: places.id,
       placeName: places.name,
       placeAddress: places.address,
+      categoryId: categories.id,
+      categorySlug: categories.slug,
       categoryName: categories.name,
     })
     .from(ratings)
