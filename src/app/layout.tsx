@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { BottomNav } from "@/components/bottom-nav";
 import { ClerkThemeProvider } from "@/components/clerk-theme-provider";
+import { SwUpdater } from "@/components/sw-updater";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -53,6 +54,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       >
         <body className="bg-background text-foreground">
+          <SwUpdater />
           <div className="app-shell">
             <main className="app-scroll safe-top">
               <div className="mx-auto w-full max-w-lg px-4 pb-8">
