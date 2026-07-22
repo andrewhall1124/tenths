@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import { BottomNav } from "@/components/bottom-nav";
+import { ClerkThemeProvider } from "@/components/clerk-theme-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,7 +31,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#000000",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f2f2f7" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
+  ],
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -44,25 +47,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider
-      signInUrl="/sign-in"
-      signUpUrl="/sign-up"
-      signInFallbackRedirectUrl="/"
-      signUpFallbackRedirectUrl="/"
-      appearance={{
-        variables: {
-          colorPrimary: "#ffffff",
-          colorPrimaryForeground: "#000000",
-          colorForeground: "#ffffff",
-          colorMutedForeground: "#8e8e93",
-          colorBackground: "#1c1c1e",
-          colorInput: "#2c2c2e",
-          colorInputForeground: "#ffffff",
-          colorBorder: "#38383a",
-          borderRadius: "0.75rem",
-        },
-      }}
-    >
+    <ClerkThemeProvider>
       <html
         lang="en"
         className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
@@ -74,6 +59,6 @@ export default function RootLayout({
           <BottomNav />
         </body>
       </html>
-    </ClerkProvider>
+    </ClerkThemeProvider>
   );
 }

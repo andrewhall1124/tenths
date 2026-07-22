@@ -1,15 +1,31 @@
 @import "tailwindcss";
 
-/* Tenths — iOS-native monochrome. True black, crisp white, numerals as the hero. */
+/* Tenths — iOS-native monochrome. Follows the system light/dark preference;
+   emojis are the only color. Light is the default; dark overrides below. */
 :root {
-  --background: #000000;
-  --surface: #1c1c1e;
-  --surface-2: #2c2c2e;
-  --border: #38383a;
-  --foreground: #ffffff;
+  color-scheme: light;
+  --background: #f2f2f7;
+  --surface: #ffffff;
+  --surface-2: #e5e5ea;
+  --border: #d1d1d6;
+  --foreground: #000000;
   --muted: #8e8e93;
-  --accent: #ffffff;
-  --accent-ink: #000000;
+  --accent: #000000;
+  --accent-ink: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --background: #000000;
+    --surface: #1c1c1e;
+    --surface-2: #2c2c2e;
+    --border: #38383a;
+    --foreground: #ffffff;
+    --muted: #8e8e93;
+    --accent: #ffffff;
+    --accent-ink: #000000;
+  }
 }
 
 @theme inline {

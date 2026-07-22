@@ -15,10 +15,9 @@ export function formatScore(n: number): string {
 }
 
 /**
- * Monochrome brand: the numeral is always crisp white. Higher scores read
- * as "brighter" only through the surrounding UI, never through hue.
- * Returns a CSS color string.
+ * Monochrome brand: the numeral is always the theme's ink color (black in
+ * light mode, white in dark), never a hue. Returns a CSS color string.
  */
 export function scoreColor(_n?: number): string {
-  return "#ffffff";
+  return "var(--foreground)";
 }
