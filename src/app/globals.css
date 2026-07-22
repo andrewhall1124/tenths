@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+/* Tenths — dark, appetite-warm amber accent, numerals as the hero. */
+:root {
+  --background: #0b0b0d;
+  --surface: #17171b;
+  --surface-2: #202027;
+  --border: #2c2c34;
+  --foreground: #f4f4f5;
+  --muted: #9b9ba4;
+  --accent: #ff9500;
+  --accent-ink: #1a1205;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Tabular numerals so decimals always line up — core to the brand. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* Respect iOS safe areas for the installed PWA. */
+.safe-bottom {
+  padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
+}
