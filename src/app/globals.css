@@ -66,12 +66,13 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  /* Size to the DYNAMIC viewport, not `bottom: 0`. On iOS Safari `bottom: 0`
-     anchors to the small (toolbar-expanded) viewport, so when the toolbar
-     collapses the shell stays short and leaves a ~50px band of background
-     below the footer. `100dvh` tracks the visible viewport, keeping the footer
-     flush to the real bottom. */
-  height: 100dvh;
+  /* Size to the LARGE viewport so the shell always spans the full physical
+     screen. `inset: 0`/`100dvh` both resolve ~50px short on iOS Safari (they
+     reserve the collapsed bottom-toolbar area), leaving a band of background
+     under the footer. `100vh`/`100lvh` fill it, keeping the footer flush to the
+     real bottom; the footer's own safe-area padding clears the home indicator. */
+  height: 100vh;
+  height: 100lvh;
   display: flex;
   flex-direction: column;
   background: var(--background);
