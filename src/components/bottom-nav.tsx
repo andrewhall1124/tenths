@@ -37,7 +37,7 @@ export function BottomNav({ meHandle }: { meHandle: string | null }) {
 
   return (
     <nav className="shrink-0 border-t border-border bg-background safe-bottom">
-      <div className="mx-auto flex h-11 max-w-lg items-stretch px-2">
+      <div className="mx-auto flex h-9 max-w-lg items-stretch px-2">
         <Item href="/" label="Feed" icon={HomeIcon} active={pathname === "/"} />
         <Item
           href="/explore"
