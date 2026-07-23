@@ -176,7 +176,7 @@ export function RateForm({
     startDelete(async () => {
       try {
         await deleteRating(edit.ratingId);
-        router.push("/");
+        router.push("/feed");
       } catch {
         setError("Couldn’t delete. Try again.");
       }

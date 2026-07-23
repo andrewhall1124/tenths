@@ -1,4 +1,4 @@
-import { and, avg, count, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, avg, count, desc, eq, inArray, isNotNull, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
   categories,
@@ -76,6 +76,51 @@ export async function getFollowingFeed(
 /** Recent ratings across everyone — used for discovery / cold start. */
 export async function getGlobalFeed(limit = 40): Promise<FeedItem[]> {
   return baseFeedQuery().orderBy(desc(ratings.updatedAt)).limit(limit);
+}
+
+export type MapPlace = {
+  id: number;
+  name: string;
+  lat: number;
+  lng: number;
+  categorySlug: string;
+  categoryName: string;
+  categoryEmoji: string;
+  avgScore: number | null;
+  ratingCount: number;
+};
+
+/** Every place that has coordinates, with its average score — for the map. */
+export async function getMapPlaces(): Promise<MapPlace[]> {
+  const rows = await db
+    .select({
+      id: places.id,
+      name: places.name,
+      lat: places.lat,
+      lng: places.lng,
+      categorySlug: categories.slug,
+      categoryName: categories.name,
+      categoryEmoji: categories.emoji,
+      avgScore: avg(ratings.score),
+      ratingCount: count(ratings.id),
+    })
+    .from(places)
+    .innerJoin(categories, eq(places.categoryId, categories.id))
+    .leftJoin(ratings, eq(ratings.placeId, places.id))
+    .where(and(isNotNull(places.lat), isNotNull(places.lng)))
+    .groupBy(places.id, categories.id);
+
+  return rows.map((r) => ({
+    id: r.id,
+    name: r.name,
+    lat: r.lat as number,
+    lng: r.lng as number,
+    categorySlug: r.categorySlug,
+    categoryName: r.categoryName,
+    categoryEmoji: r.categoryEmoji,
+    avgScore: r.avgScore != null ? Number(r.avgScore) : null,
+    ratingCount: Number(r.ratingCount),
+  }));
 }
 
 export type PlaceDetail = {

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CompassIcon, HomeIcon, KeyIcon, UserIcon } from "./icons";
+import { CompassIcon, KeyIcon, ListIcon, UserIcon } from "./icons";
 
 function Item({
   href,
@@ -38,12 +38,17 @@ export function BottomNav({ meHandle }: { meHandle: string | null }) {
   return (
     <nav className="shrink-0 border-t border-border bg-background safe-bottom">
       <div className="mx-auto flex max-w-lg items-stretch px-2 py-2.5">
-        <Item href="/" label="Feed" icon={HomeIcon} active={pathname === "/"} />
         <Item
-          href="/explore"
+          href="/"
           label="Explore"
           icon={CompassIcon}
-          active={pathname.startsWith("/explore")}
+          active={pathname === "/"}
+        />
+        <Item
+          href="/feed"
+          label="Feed"
+          icon={ListIcon}
+          active={pathname.startsWith("/feed")}
         />
         {signedIn ? (
           <Item href={youHref} label="You" icon={UserIcon} active={youActive} />

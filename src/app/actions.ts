@@ -123,6 +123,7 @@ export async function saveRating(formData: FormData) {
     });
 
   revalidatePath("/");
+  revalidatePath("/feed");
   revalidatePath(`/place/${placeId}`);
   revalidatePath(`/u/${user.handle}`);
   return { placeId };
@@ -188,6 +189,7 @@ export async function toggleFollow(followeeId: string) {
     });
   }
   revalidatePath("/");
+  revalidatePath("/feed");
 }
 
 const updateRatingSchema = ratingSchema.extend({
@@ -245,6 +247,7 @@ export async function updateRating(formData: FormData) {
   }
 
   revalidatePath("/");
+  revalidatePath("/feed");
   revalidatePath(`/place/${row.placeId}`);
   revalidatePath(`/place/${targetPlaceId}`);
   revalidatePath(`/u/${user.handle}`);
@@ -265,6 +268,7 @@ export async function deleteRating(ratingId: number) {
   await db.delete(ratings).where(eq(ratings.id, ratingId));
 
   revalidatePath("/");
+  revalidatePath("/feed");
   revalidatePath(`/place/${row.placeId}`);
   revalidatePath(`/u/${user.handle}`);
   return { placeId: row.placeId };
