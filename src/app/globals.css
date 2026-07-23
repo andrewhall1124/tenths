@@ -63,7 +63,15 @@ body {
    screen edges so the footer sits flush above the home indicator. */
 .app-shell {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  /* Size to the DYNAMIC viewport, not `bottom: 0`. On iOS Safari `bottom: 0`
+     anchors to the small (toolbar-expanded) viewport, so when the toolbar
+     collapses the shell stays short and leaves a ~50px band of background
+     below the footer. `100dvh` tracks the visible viewport, keeping the footer
+     flush to the real bottom. */
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   background: var(--background);
@@ -89,7 +97,7 @@ body {
    empty band under the footer. Floor 0.25rem, cap 12px — enough to clear the
    home-indicator pill without a tall gap. */
 .safe-bottom {
-  padding-bottom: clamp(0.25rem, env(safe-area-inset-bottom), 12px);
+  padding-bottom: clamp(0.5rem, env(safe-area-inset-bottom), 20px);
 }
 
 /* Keep content clear of the translucent status bar / notch. */
