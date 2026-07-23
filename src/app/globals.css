@@ -96,9 +96,11 @@ body {
    real home-indicator only needs a small clearance, and Safari (viewport-fit=
    cover + black-translucent) reports a much larger value that leaves a big
    empty band under the footer. Floor 0.25rem, cap 12px — enough to clear the
-   home-indicator pill without a tall gap. */
+   home-indicator pill without a tall gap. Now that the shell reaches the true
+   screen bottom (100vh), the footer sits flush, so it needs the full ~34px
+   home-indicator clearance or the label row is dimmed/hidden behind it. */
 .safe-bottom {
-  padding-bottom: clamp(0.5rem, env(safe-area-inset-bottom), 20px);
+  padding-bottom: clamp(0.5rem, env(safe-area-inset-bottom), 34px);
 }
 
 /* Keep content clear of the translucent status bar / notch. */
