@@ -83,9 +83,12 @@ body {
   font-feature-settings: "tnum";
 }
 
-/* Respect iOS safe areas for the installed PWA. */
+/* Respect iOS safe areas for the installed PWA. Clamp the inset: the real
+   home-indicator height is 34px, but Safari (with viewport-fit=cover +
+   black-translucent) can report a much larger value, which otherwise leaves a
+   huge empty band under the footer. Floor 0.5rem, cap 34px. */
 .safe-bottom {
-  padding-bottom: max(env(safe-area-inset-bottom), 0.5rem);
+  padding-bottom: clamp(0.5rem, env(safe-area-inset-bottom), 34px);
 }
 
 /* Keep content clear of the translucent status bar / notch. */
